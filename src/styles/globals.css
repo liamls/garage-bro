@@ -1,0 +1,613 @@
+@import url("https://fonts.googleapis.com/css2?family=Instrument+Sans:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap");
+
+:root {
+  --bg: #eceae3;
+  --surface: #ffffff;
+  --border: #e0ddd6;
+  --txt: #1a1a1a;
+  --txt-2: #6b6860;
+  --txt-3: #a8a49e;
+
+  /* Pedal colors */
+  --c-amp: #171717;
+  --c-eq: #1d4ed8;
+  --c-reverb: #6d28d9;
+
+  --sans: "Instrument Sans", system-ui, sans-serif;
+  --mono: "JetBrains Mono", monospace;
+  --radius-pedal: 1.125rem; /* 18px */
+}
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+html,
+body,
+#root {
+  height: 100%;
+  overflow: hidden;
+}
+
+body {
+  font-family: var(--sans);
+  background: var(--bg);
+  color: var(--txt);
+  -webkit-font-smoothing: antialiased;
+}
+
+/* ── App shell ─────────────────────────────────────────────────────────────── */
+.app {
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+  overflow: hidden;
+}
+
+/* ── Header ────────────────────────────────────────────────────────────────── */
+.header {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem; /* 12px */
+  padding: 0 1.75rem; /* 28px */
+  height: 3.5rem; /* 56px */
+  background: var(--surface);
+  border-bottom: 1px solid var(--border);
+}
+
+.header-devices {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem; /* 8px */
+  flex: 1;
+}
+
+.device-group {
+  display: flex;
+  align-items: center;
+  gap: 0.375rem; /* 6px */
+}
+
+.device-icon {
+  font-size: 0.8125rem; /* 13px */
+  line-height: 1;
+}
+
+.device-select {
+  background: transparent;
+  border: none;
+  outline: none;
+  font-family: var(--sans);
+  font-size: 0.8125rem; /* 13px */
+  font-weight: 500;
+  color: var(--txt);
+  cursor: pointer;
+  max-width: 12.5rem; /* 200px */
+  text-overflow: ellipsis;
+}
+.device-select:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+.device-divider {
+  width: 1px;
+  height: 1rem; /* 16px */
+  background: var(--border);
+  margin: 0 0.25rem; /* 4px */
+}
+
+.device-placeholder {
+  font-size: 0.75rem; /* 12px */
+  color: var(--txt-3);
+}
+
+/* ── Power button ──────────────────────────────────────────────────────────── */
+.power {
+  display: flex;
+  align-items: center;
+  gap: 0.4375rem; /* 7px */
+  padding: 0.4375rem 1rem; /* 7px 16px */
+  border-radius: 1.25rem; /* 20px */
+  border: 1.5px solid var(--border);
+  background: transparent;
+  color: var(--txt-2);
+  font-family: var(--sans);
+  font-size: 0.8125rem; /* 13px */
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.15s;
+  flex-shrink: 0;
+}
+.power:hover {
+  border-color: var(--txt-3);
+  color: var(--txt);
+}
+.power.on {
+  background: var(--txt);
+  border-color: var(--txt);
+  color: #fff;
+}
+.power.loading {
+  opacity: 0.5;
+  cursor: wait;
+}
+.power:disabled {
+  cursor: not-allowed;
+}
+
+.power-led {
+  width: 0.4375rem; /* 7px */
+  height: 0.4375rem; /* 7px */
+  border-radius: 50%;
+  background: currentColor;
+  opacity: 0.4;
+  transition: opacity 0.2s;
+  flex-shrink: 0;
+}
+.power.on .power-led {
+  background: #4ade80;
+  opacity: 1;
+  box-shadow: 0 0 6px rgba(74, 222, 128, 0.7);
+}
+
+/* ── Error ─────────────────────────────────────────────────────────────────── */
+.error-banner {
+  padding: 0.5rem 1.75rem; /* 8px 28px */
+  background: #fef2f2;
+  border-bottom: 1px solid #fecaca;
+  color: #dc2626;
+  font-size: 0.75rem; /* 12px */
+}
+
+/* ── Pedalboard ────────────────────────────────────────────────────────────── */
+.pedalboard {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-wrap: wrap;
+  gap: 1rem;
+  padding: 2rem;
+  overflow-y: auto;
+  overflow-x: hidden;
+  scrollbar-width: none;
+}
+.pedalboard::-webkit-scrollbar {
+  display: none;
+}
+
+/* ── Pedal card ────────────────────────────────────────────────────────────── */
+.pedal {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 1rem 1rem 0.875rem;
+  border-radius: var(--radius-pedal);
+  justify-content: flex-start;
+  height: 14rem;
+  width: fit-content;
+  flex-shrink: 0;
+  position: relative;
+  box-shadow:
+    0 1px 0 rgba(255, 255, 255, 0.12) inset,
+    0 -2px 0 rgba(0, 0, 0, 0.25) inset,
+    0 8px 20px rgba(0, 0, 0, 0.18),
+    0 2px 6px rgba(0, 0, 0, 0.1);
+  transition: transform 0.15s, box-shadow 0.15s;
+}
+.pedal:hover {
+  transform: translateY(-2px);
+  box-shadow:
+    0 1px 0 rgba(255, 255, 255, 0.16) inset,
+    0 -2px 0 rgba(0, 0, 0, 0.25) inset,
+    0 12px 28px rgba(0, 0, 0, 0.22),
+    0 4px 10px rgba(0, 0, 0, 0.14);
+}
+
+/* Amp is the centerpiece — styled distinctly like a metal head */
+.pedal-amp {
+  background: linear-gradient(135deg, #2a2a2a, #111);
+  border: 2px solid #444;
+  border-radius: 0.5rem;
+  width: 26rem;
+  height: 14rem;
+  padding: 1rem 1.25rem;
+  box-shadow: 
+    0 -2px 0 rgba(255, 255, 255, 0.08) inset,
+    0 6px 18px rgba(0, 0, 0, 0.55);
+}
+
+.pedal-chorus {
+  background: #0ea5e9; /* Sky blue */
+}
+
+.pedal-disto {
+  background: #f97316; /* Orange/distortion tone */
+}
+
+.pedal-eq {
+  background: var(--c-eq);
+  width: 12rem;
+}
+
+.pedal-reverb {
+  background: var(--c-reverb);
+}
+.pedal-buffer {
+  background: #b91c1c;
+}
+
+.pedal-level {
+  background: #0f172a;
+  padding: 1rem 0.75rem 0.875rem;
+  width: 7rem;
+  height: 14rem;
+}
+
+.pedal-master {
+  background: #1c1c1e;
+  border: 1px solid #2c2c2e;
+}
+
+.pedal-tuner {
+  background: #0f1117;
+  color: #4ade80;
+  border: 1px solid #2a2a2a;
+  width: 9rem;
+  height: 14rem;
+  justify-content: center;
+}
+
+/* ── Reverb Specific Controls ──────────────────────────────────────────────── */
+.reverb-controls {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1.25rem;
+  width: 100%;
+}
+
+.reverb-type-switch {
+  display: flex;
+  background: rgba(0, 0, 0, 0.25);
+  border-radius: 0.5rem;
+  padding: 0.125rem;
+  width: 100%;
+}
+
+.type-btn {
+  flex: 1;
+  background: transparent;
+  border: none;
+  color: rgba(255, 255, 255, 0.4);
+  font-family: var(--sans);
+  font-size: 0.625rem;
+  font-weight: 600;
+  padding: 0.25rem 0;
+  border-radius: 0.375rem;
+  cursor: pointer;
+  transition: all 0.2s;
+  text-transform: uppercase;
+}
+.type-btn.active {
+  background: rgba(255, 255, 255, 0.15);
+  color: #fff;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.3);
+}
+
+/* ── Pedal header (name + bypass toggle) ────────────────────────────────────── */
+.pedal-header {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.25rem;
+}
+
+.pedal-name {
+  font-size: 0.6rem;
+  font-weight: 700;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: rgba(255, 255, 255, 0.5);
+}
+
+/* LED bypass toggle */
+.pedal-bypass {
+  width: 0.5rem;
+  height: 0.5rem;
+  border-radius: 50%;
+  border: none;
+  cursor: pointer;
+  flex-shrink: 0;
+  transition: box-shadow 0.2s, background 0.2s;
+  padding: 0;
+}
+.pedal-bypass--on {
+  background: #4ade80;
+  box-shadow: 0 0 6px 2px rgba(74, 222, 128, 0.6);
+}
+.pedal-bypass--off {
+  background: #444;
+  box-shadow: none;
+}
+
+/* Bypassed pedal state */
+.pedal--bypassed {
+  opacity: 0.42;
+  filter: saturate(0.1);
+  transition: opacity 0.3s ease, filter 0.3s ease;
+}
+.pedal:not(.pedal--bypassed) {
+  opacity: 1;
+  filter: none;
+  transition: opacity 0.3s ease, filter 0.3s ease;
+}
+
+/* ── Knob on pedal ─────────────────────────────────────────────────────────── */
+.knob-wrapper {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.4375rem; /* 7px */
+  user-select: none;
+}
+
+.knob-container {
+  position: relative;
+  cursor: grab;
+}
+.knob-container:active {
+  cursor: grabbing;
+}
+
+.knob-value-overlay {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  pointer-events: none;
+  background: rgba(0, 0, 0, 0.35);
+  border-radius: 50%;
+}
+
+.knob-value-text {
+  font-family: var(--mono);
+  font-size: 0.625rem; /* 10px */
+  font-weight: 500;
+  color: #fff;
+}
+
+.knob-label {
+  font-size: 0.625rem; /* 10px */
+  font-weight: 600;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: rgba(255, 255, 255, 0.75);
+}
+
+.knob-row {
+  display: flex;
+  gap: 0.75vw; /* 10px */
+  align-items: flex-start;
+}
+
+/* ── Amp model ─────────────────────────────────────────────────────────────── */
+.amp-head {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.625rem; /* 10px */
+  width: 100%;
+}
+
+.amp-mode-label {
+  font-size: 0.6rem; /* 9px */
+  font-weight: 500;
+  letter-spacing: 0.06em;
+  color: rgba(255, 255, 255, 0.35);
+  min-height: 0.6875rem; /* 11px */
+  transition: color 0.2s;
+  text-align: center;
+  font-family: var(--mono);
+}
+.amp-mode-label.active {
+  color: rgba(255, 255, 255, 0.6);
+}
+
+.amp-buttons {
+  display: flex;
+  gap: 0.375rem; /* 6px */
+}
+
+.amp-btn {
+  padding: 0.375rem 0.625rem; /* 6px 10px */
+  border-radius: 0.5rem; /* 8px */
+  border: 1.5px solid rgba(255, 255, 255, 0.12);
+  background: rgba(255, 255, 255, 0.06);
+  color: rgba(255, 255, 255, 0.4);
+  font-family: var(--sans);
+  font-size: 0.6875rem; /* 11px */
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+.amp-btn:hover {
+  color: rgba(255, 255, 255, 0.7);
+  border-color: rgba(255, 255, 255, 0.25);
+}
+.amp-btn.active {
+  background: rgba(255, 255, 255, 0.18);
+  border-color: rgba(255, 255, 255, 0.4);
+  color: #fff;
+}
+
+/* Amp controls row: gain | EQ knobs */
+.amp-controls {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  width: 100%;
+  justify-content: center;
+  flex-wrap: wrap;
+}
+
+.amp-divider {
+  width: 1px;
+  height: 2.5rem;
+  background: rgba(255, 255, 255, 0.1);
+  flex-shrink: 0;
+}
+
+/* ── Tuner display ────────────────────────────────────────────────────────── */
+.tuner-display {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 0.375rem;
+  flex: 1;
+  width: 100%;
+}
+
+.tuner-note {
+  font-family: var(--mono);
+  font-size: 2.2rem;
+  font-weight: 700;
+  color: #4ade80;
+  line-height: 1;
+}
+
+.tuner-cents {
+  font-family: var(--mono);
+  font-size: 0.75rem;
+  font-weight: 500;
+  transition: color 0.2s;
+}
+
+.tuner-idle {
+  color: #333;
+  font-size: 2rem;
+  font-family: var(--mono);
+}
+
+.tuner-bars {
+  display: flex;
+  gap: 3px;
+  align-items: flex-end;
+  margin-top: 0.25rem;
+}
+
+.tuner-bar {
+  width: 0.25rem;
+  height: 1rem;
+  border-radius: 2px;
+  background: rgba(255, 255, 255, 0.1);
+  transition: background 0.15s;
+}
+.tuner-bar--center {
+  height: 1.4rem;
+  background: rgba(255, 255, 255, 0.15);
+}
+.tuner-bar--active {
+  background: #f97316;
+}
+.tuner-bar--center.tuner-bar--active {
+  background: #4ade80;
+}
+
+/* ── Level bar (thin, inside pedal) ───────────────────────────────────────── */
+/* Styles live in LevelBar.tsx inline */
+
+/* ── VU Meter ──────────────────────────────────────────────────────────────── */
+.vu-meter {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.375rem; /* 6px */
+}
+
+.vu-label {
+  font-size: 0.6rem; /* 9px */
+  font-weight: 600;
+  letter-spacing: 0.18em;
+  color: rgba(255, 255, 255, 0.45);
+  text-transform: uppercase;
+}
+
+/* ── Footer / status bar ───────────────────────────────────────────────────── */
+.footer {
+  display: flex;
+  align-items: center;
+  gap: 1.25rem; /* 20px */
+  padding: 0 1.75rem; /* 28px */
+  height: 3rem; /* 48px */
+  background: var(--surface);
+  border-top: 1px solid var(--border);
+}
+
+.footer-status {
+  font-family: var(--mono);
+  font-size: 0.6875rem; /* 11px */
+  color: var(--txt-3);
+  flex: 1;
+}
+
+.footer-status span {
+  color: var(--txt-2);
+  font-weight: 500;
+}
+
+.footer-latency {
+  font-family: var(--mono);
+  font-size: 0.6875rem; /* 11px */
+  color: var(--txt-3);
+}
+
+.footer-latency b {
+  font-weight: 500;
+}
+
+/* ── Buffer mode selector (legacy, currently omitted but styled for generic btns) ──────────────────────────────────────────────────── */
+.buffer-modes {
+  display: flex;
+  flex-shrink: 0;
+}
+
+.buffer-btn {
+  padding: 0.2rem 0.625rem; /* 3px 10px */
+  border: 1px solid var(--border);
+  background: transparent;
+  color: var(--txt-3);
+  font-family: var(--mono);
+  font-size: 0.625rem; /* 10px */
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.12s;
+  letter-spacing: 0.04em;
+}
+.buffer-btn:first-child { border-radius: 0.375rem 0 0 0.375rem; }
+.buffer-btn:last-child  { border-radius: 0 0.375rem 0.375rem 0; }
+.buffer-btn + .buffer-btn { border-left: none; }
+.buffer-btn:hover { color: var(--txt-2); border-color: var(--txt-3); z-index: 1; position: relative; }
+.buffer-btn.active { background: var(--txt); border-color: var(--txt); color: #fff; z-index: 1; position: relative; }
+
+/* ── Scrollbar ─────────────────────────────────────────────────────────────── */
+::-webkit-scrollbar {
+  width: 4px;
+  height: 4px;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+::-webkit-scrollbar-thumb {
+  background: var(--border);
+  border-radius: 2px;
+}
